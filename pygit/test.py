@@ -9,6 +9,8 @@ from object import \
 SHA1_TO_FILE = {
         '815fa52ea791bf9a0d152ca3386d61d3ad023a5a': 'tree1',
         '00909da106de7af4a10f609de58136c47ca3221e': 'tree2',
+        '379bf459121513d43d0758e2b57629c064a5f727': 'tree3',
+        '6ff9ac7448e894a8df4bbb6dc248f8fac255c86b': 'subdir1',
         'a94e2db7b97aab44f1ec897c10e0bdf2e5dbd80f': 'README',
         'dc1b915cba9cd6efd61c353fefb96823aaf2dd8f': 'TODO'}
 FILE_TO_SHA1 = dict([(v, k) for k, v in SHA1_TO_FILE.items()])
@@ -20,6 +22,10 @@ SHA1_TO_CONTENT = {
         '00909da106de7af4a10f609de58136c47ca3221e':
             '%d %s\0%s' % (100644, 'README', a2b_hex(FILE_TO_SHA1['README'])) + \
             '%d %s\0%s' % (100644, 'TODO', a2b_hex(FILE_TO_SHA1['TODO'])),
+        '379bf459121513d43d0758e2b57629c064a5f727':
+            '%d %s\0%s' % (100644, 'README', a2b_hex(FILE_TO_SHA1['README'])) + \
+            '%d %s\0%s' % (100644, 'TODO', a2b_hex(FILE_TO_SHA1['TODO'])) + \
+            '%d %s\0%s' % (40000, 'subdir1', a2b_hex(FILE_TO_SHA1['subdir1'])),
         'dc1b915cba9cd6efd61c353fefb96823aaf2dd8f': 'TODO Content.\n'}
 
 class TestBlob:
@@ -60,3 +66,13 @@ class TestTree:
 
             # Testing for sha1 should be enough, but we double check here
             assert o.content == SHA1_TO_CONTENT[o.sha1()]
+
+    def test_simple_parse2(self):
+        # this tree contains a subtree
+        filename = 'tree3'
+        o = from_filename(filename)
+
+        assert o.sha1() == FILE_TO_SHA1[filename]
+
+        # Testing for sha1 should be enough, but we double check here
+        assert o.content == SHA1_TO_CONTENT[o.sha1()]
