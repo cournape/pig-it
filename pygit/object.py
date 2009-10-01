@@ -216,3 +216,24 @@ if __name__ == '__main__':
 
     entries = [RawEntry(os.stat(filename).st_mode, filename, o.sha1())]
     t = Tree(entries)
+
+    master_ref = 'b310f41fb634607ffb2d8aa8fac8cfa68af55ebe'
+    git_root = '/usr/media/src/dsp/numscons/numscons-git/.git'
+
+    commit_id = _TYPES_TO_ID['commit']
+    def get_parent(sha1):
+        filename = sha1_to_filename(sha1, git_root)
+        commit = from_filename(filename)
+        if not commit._type_id == commit_id:
+            raise ValueError("Expected a commit object.")
+
+        return commit.header.parents
+
+    commits = [master_ref]
+    parent = get_parent(master_ref)
+    while parent:
+        commits.append(parent[0])
+        parent = get_parent(parent[0])
+
+    for c in commits:
+        print from_filename(sha1_to_filename(c, git_root)).content
