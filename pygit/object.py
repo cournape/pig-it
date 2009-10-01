@@ -83,14 +83,13 @@ class Blob(GitObject):
 import binascii
 
 class RawEntry(object):
-    def __init__(self, mode, type, sha1, name):
+    def __init__(self, mode, name, sha1):
         self.mode = mode
-        self.type = type
         self.sha1 = sha1
         self.name = name
 
-    def pretty_str(self):
-        return '%o %s %s\t%s' % (self.mode, self.type, self.sha1, self.name)
+    # def pretty_str(self):
+    #     return '%o %s %s\t%s' % (self.mode, self.type, self.sha1, self.name)
 
     def raw_str(self):
         return '%o %s\0%s' % (self.mode, self.name, binascii.a2b_hex(self.sha1))
@@ -105,8 +104,8 @@ class Tree(GitObject):
     def _compute_content(self):
         return "\n".join(e.raw_str() for e in self.entries)
 
-    def __str__(self):
-        return "\n".join([e.pretty_str() for e in self.entries])
+    # def __str__(self):
+    #     return "\n".join([e.pretty_str() for e in self.entries])
 
 _TYPE_TO_CLS = {'blob': Blob, 'tree': Tree}
 
@@ -124,5 +123,5 @@ if __name__ == '__main__':
     filename = 'TODO'
     o = from_filename(filename)
 
-    entries = [RawEntry(os.stat(filename).st_mode, o.type, o.sha1(), filename)]
+    entries = [RawEntry(os.stat(filename).st_mode, filename, o.sha1())]
     t = Tree(entries)

@@ -40,8 +40,8 @@ class TestBlob:
 class TestTree:
     def test_from_entries(self):
         sha1name = '815fa52ea791bf9a0d152ca3386d61d3ad023a5a'
-        raw_entries = [RawEntry(os.stat('TODO').st_mode, 'blob',
-                                FILE_TO_SHA1['TODO'], 'TODO')]
+        raw_entries = [RawEntry(os.stat('TODO').st_mode, 'TODO',
+                                FILE_TO_SHA1['TODO'])]
 
         tree = Tree(raw_entries)
         assert tree.sha1() == sha1name
