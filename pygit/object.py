@@ -107,6 +107,9 @@ def from_filename(file):
         return Blob(content)
     elif tp == 'tree':
         return Tree(parse_tree(content))
+    elif tp == 'commit':
+        header, message = parse_commit(content)
+        return Commit(header, message)
     else:
         raise NotImplementedError("type %s not implemented" % tp)
 
