@@ -13,9 +13,9 @@ def parse_object(string):
     ustring = zlib.decompress(string)
 
     otp = None
-    for tp in _TYPES_TO_ID:
-        if ustring.startswith(tp):
-            otp = _TYPES_TO_ID[tp]
+    for tpstr in _TYPES_TO_ID:
+        if ustring.startswith(tpstr):
+            otp = _TYPES_TO_ID[tpstr]
 
     if otp is None:
         raise ValueError("Could not parse tp %s)" % ustring[:10])
@@ -38,7 +38,7 @@ def parse_object(string):
     content = ustring[i+1:]
 
     assert len(content) == l
-    return content, tp
+    return content, otpstr
 
 def header(content, tp):
     return '%s %d\0' % (tp, len(content))
