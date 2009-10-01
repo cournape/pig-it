@@ -4,7 +4,7 @@ from binascii import \
         a2b_hex
 
 from object import \
-        from_filename, Blob, Tree, RawEntry
+        from_filename, Blob, Tree, RawEntry, parse_object
 
 SHA1_TO_FILE = {
         '815fa52ea791bf9a0d152ca3386d61d3ad023a5a': 'tree1',
@@ -27,6 +27,19 @@ SHA1_TO_CONTENT = {
             '%d %s\0%s' % (100644, 'TODO', a2b_hex(FILE_TO_SHA1['TODO'])) + \
             '%d %s\0%s' % (40000, 'subdir1', a2b_hex(FILE_TO_SHA1['subdir1'])),
         'dc1b915cba9cd6efd61c353fefb96823aaf2dd8f': 'TODO Content.\n'}
+
+class TestRawObject:
+    """Test that we parse raw objects correctly: we just test whether we parse
+    the header correctly, and that content match with the one hardcoded in
+    SHA1_TO_CONTENT."""
+    def test(self):
+        for sha1, ref_content in SHA1_TO_CONTENT.items():
+            f = open(SHA1_TO_FILE[sha1])
+            try:
+                content = parse_object(f.read())[0]
+                assert content == ref_content
+            finally:
+                f.close()
 
 class TestBlob:
     def test_from_content(self):
