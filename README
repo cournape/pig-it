@@ -1,0 +1,6 @@
+This is a set of python modules to operate on a git repository from python
+*natively* (without calling git). I want to learn git internals and play with
+it without going into C, this project is my way of doing it - it is unlikely to
+be useful beyond this.
+
+It is released under a liberal BSD-license.
