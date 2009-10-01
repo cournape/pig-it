@@ -44,7 +44,7 @@ def parse_object(string):
     assert len(content) == l
     return content, otpstr
 
-def header(content, tp):
+def raw_header(content, tp):
     return '%s %d\0' % (tp, len(content))
 
 def parse_tree(content):
@@ -89,11 +89,11 @@ def from_filename(file):
 #             raise ValueError("Unknown tp %s" % tp)
 
 class GitObject(object):
-    def header(self):
-        return header(self.content, _ID_TO_TYPES[self._type_id])
+    def raw_header(self):
+        return raw_header(self.content, _ID_TO_TYPES[self._type_id])
 
     def sha1(self):
-        return hashlib.sha1('%s%s' % (self.header(), self.content)).hexdigest()
+        return hashlib.sha1('%s%s' % (self.raw_header(), self.content)).hexdigest()
 
 class Blob(GitObject):
     type = 'blob'
