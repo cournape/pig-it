@@ -1,5 +1,6 @@
 import zlib
 import hashlib
+import os
 
 def sort_by_values(d):
     """Sort a dict from its values."""
@@ -195,6 +196,9 @@ class Commit(GitObject):
         return "\n".join(cnt)
 
 _TYPE_TO_CLS = {'blob': Blob, 'tree': Tree, 'commit': Commit}
+
+def sha1_to_filename(sha1, git_root):
+    return os.path.join(git_root, 'objects', sha1[:2], sha1[2:])
 
 if __name__ == '__main__':
     import os
