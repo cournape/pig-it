@@ -49,21 +49,23 @@ def header(content, tp):
 
 def parse_tree(content):
     entries = []
-    for line in content.splitlines():
-        mode, remain = line.split(' ', 1)
+    while content:
+        mode, content = content.split(' ', 1)
         imode = int(mode, 8)
 
         # Parse name
         _name = []
         i = 0
-        while remain[i] != '\0':
-            _name.append(remain[i])
+        while content[i] != '\0':
+            _name.append(content[i])
             i += 1
         name = ''.join(_name)
 
         # parse sha1
-        sha1 = binascii.b2a_hex(remain[i+1:])
+        sha1 = binascii.b2a_hex(content[i+1:i+21])
         entries.append(RawEntry(imode, name, sha1))
+
+        content = content[i+21:]
 
     return entries
 
@@ -105,9 +107,13 @@ class Blob(GitObject):
 #   - sha1
 #   - name (e.g. filename)
 import binascii
+import stat
 
 class RawEntry(object):
     def __init__(self, mode, name, sha1):
+        known = stat.S_ISREG(mode) or stat.S_ISLNK(mode) or stat.S_ISDIR(mode)
+        if not known:
+            raise ValueError("Unsupported file type (mode %o)" % mode)
         self.mode = mode
         self.sha1 = sha1
         self.name = name
@@ -126,7 +132,7 @@ class Tree(GitObject):
         self.content = self._compute_content()
 
     def _compute_content(self):
-        return "\n".join(e.raw_str() for e in self.entries)
+        return "".join(e.raw_str() for e in self.entries)
 
     # def __str__(self):
     #     return "\n".join([e.pretty_str() for e in self.entries])
