@@ -4,9 +4,11 @@ from binascii import \
         a2b_hex
 
 from object import \
-        from_filename, Blob, Tree, RawEntry, parse_object
+        from_filename, Blob, Tree, RawEntry, parse_object, CommitHeader, \
+        Commit
 
 SHA1_TO_FILE = {
+        '1b8ae996b7685aa07180a050332df81e0a6be40e': 'commit1',
         '815fa52ea791bf9a0d152ca3386d61d3ad023a5a': 'tree1',
         '00909da106de7af4a10f609de58136c47ca3221e': 'tree2',
         '379bf459121513d43d0758e2b57629c064a5f727': 'tree3',
@@ -17,6 +19,13 @@ FILE_TO_SHA1 = dict([(v, k) for k, v in SHA1_TO_FILE.items()])
 
 # Raw content of each git object (as they are on-disk, excluding header)
 SHA1_TO_CONTENT = {
+        '1b8ae996b7685aa07180a050332df81e0a6be40e':
+            """\
+tree 815fa52ea791bf9a0d152ca3386d61d3ad023a5a
+author David Cournapeau <cournape@gmail.com> 1254378435 +0900
+committer David Cournapeau <cournape@gmail.com> 1254378435 +0900
+
+Initial commit.\n""",
         '815fa52ea791bf9a0d152ca3386d61d3ad023a5a':
             '%d %s\0%s' % (100644, 'TODO', a2b_hex(FILE_TO_SHA1['TODO'])),
         '00909da106de7af4a10f609de58136c47ca3221e':
@@ -89,3 +98,16 @@ class TestTree:
 
         # Testing for sha1 should be enough, but we double check here
         assert o.content == SHA1_TO_CONTENT[o.sha1()]
+
+class TestCommit:
+    def test_from_content(self):
+        author = 'David Cournapeau <cournape@gmail.com> 1254378435 +0900'
+        committer = 'David Cournapeau <cournape@gmail.com> 1254378435 +0900'
+        tree = '815fa52ea791bf9a0d152ca3386d61d3ad023a5a'
+        message = "Initial commit.\n"
+        header = CommitHeader(author, committer, tree)
+
+        commit = Commit(header, message)
+
+        assert commit.content[:30] == SHA1_TO_CONTENT[FILE_TO_SHA1['commit1']][:30]
+        assert commit.sha1() == FILE_TO_SHA1['commit1']
