@@ -5,6 +5,10 @@ def sort_by_values(d):
     """Sort a dict from its values."""
     return sorted(_TYPES_TO_ID.items(), key=lambda x: x[1])
 
+# XXX: do we need to use integers ? The point of integer is to avoid string
+# comparison when getting the type, but that may well be premature optimization
+# -- most of the code here should be done in cython anyway when speed is in a
+# issue.
 _TYPES_TO_ID = {'blob': 0, 'tree': 1}
 _ID_TO_TYPES = [i[0] for i in sort_by_values(_TYPES_TO_ID)]
 
@@ -43,12 +47,32 @@ def parse_object(string):
 def header(content, tp):
     return '%s %d\0' % (tp, len(content))
 
+def parse_tree(content):
+    entries = []
+    for line in content.splitlines():
+        mode, remain = line.split(' ', 1)
+        imode = int(mode, 8)
+
+        # Parse name
+        _name = []
+        i = 0
+        while remain[i] != '\0':
+            _name.append(remain[i])
+            i += 1
+        name = ''.join(_name)
+
+        # parse sha1
+        sha1 = binascii.b2a_hex(remain[i+1:])
+        entries.append(RawEntry(imode, name, sha1))
+
+    return entries
+
 def from_filename(file):
     content, tp = parse_object(open(file).read())
     if tp == 'blob':
         return Blob(content)
     elif tp == 'tree':
-        raise NotImplementedError("type %s not implemented" % tp)
+        return Tree(parse_tree(content))
     else:
         raise NotImplementedError("type %s not implemented" % tp)
 

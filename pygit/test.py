@@ -46,3 +46,13 @@ class TestTree:
         tree = Tree(raw_entries)
         assert tree.sha1() == sha1name
 
+    def test_parse(self):
+        # file which contains the content of a tree object
+        filename = 'tree'
+        o = from_filename(filename)
+
+        assert o.sha1() == FILE_TO_SHA1['tree']
+
+        # Testing for sha1 should be enough, but we double check here
+        assert o.content == SHA1_TO_CONTENT[o.sha1()]
+
