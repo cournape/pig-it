@@ -119,8 +119,38 @@ class PackIndexV2:
     def __repr__(self):
         return self.__str__()
 
-def pack_index_factory(packfile):
-    f = open(packfile)
+class PackFile(object):
+    def __init__(self, pack_name):
+        self.f = open(pack_name)
+        magic = self.f.read(4)
+        if not magic == 'PACK':
+            raise ValueError("%s is not a valid pack file (Wrong Magic: %s)" % (pack, magic))
+
+        self.version = struct.unpack('!i', self.f.read(4))[0]
+        if not self.version == 2:
+            raise ValueError("Unknown version of pack file %d" % self.version)
+
+        self.nobjects = struct.unpack('!i', self.f.read(4))[0]
+
+    def read(self, offset):
+        self.f.seek(offset)
+        # each entry is one header + object content
+        # - header: every byte has its MSB set
+        def is_msb_set(bt):
+            return (bt & 0x80) != 0
+
+        header = []
+        b1 = struct.unpack('B', self.f.read(1))[0]
+        while is_msb_set(b1):
+            header.append(b1)
+            b1 = struct.unpack('B', self.f.read(1))[0]
+
+        # Take first 3 bits of first byte: type of the object
+        type = ((header[0] >> 4) & 0x7)
+        print header, type
+
+def pack_index_factory(pack_index):
+    f = open(pack_index)
     magic = f.read(4)
     ver = f.read(4)
     if magic == _V2_MAGIC and ver == _V2_VERINT:
@@ -134,17 +164,29 @@ def pack_index_factory(packfile):
         raise NotImplementedError("version 1 of pack-*.idx not implemented")
 
 if __name__ == "__main__":
-    pack = "pack-b2277b2587127f0f1b4162cba58a3dc18bf0df48.idx"
-    index = pack_index_factory(pack)
+    #pack = "pack-b2277b2587127f0f1b4162cba58a3dc18bf0df48.idx"
+    #index = pack_index_factory(pack)
 
-    f = open(pack).read()[:-20]
+    #f = open(pack).read()[:-20]
 
-    assert sha1(f).hexdigest() == index.own_checksum
+    #assert sha1(f).hexdigest() == index.own_checksum
 
-    objects = []
-    for i in index.names:
-        objects.extend(i)
+    #objects = []
+    #for i in index.names:
+    #    objects.extend(i)
 
-    assert len(objects) == index.nobjects
-    for i in objects:
-        assert index.has_object(i)
+    #assert len(objects) == index.nobjects
+    #for i in objects:
+    #    assert index.has_object(i)
+
+    index_file = "pack-da883779be953a908bd2a0d7cfa01b2902bf23e3.idx"
+    pack_file = "pack-da883779be953a908bd2a0d7cfa01b2902bf23e3.pack"
+
+    index = pack_index_factory(index_file)
+    pack = PackFile(pack_file)
+
+    assert index.nobjects == pack.nobjects
+
+    object = index.names[0][5]
+    offset = index.offsets[5]
+    print object, offset
