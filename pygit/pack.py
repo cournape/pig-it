@@ -32,35 +32,49 @@ def _parse_header_v2(f):
 # Support only V2 for now
 # Structure of a pack index V2 (from git doc sources + jgit PackIndexV2.java)
 #
-# +-----------------------------------------------------------+ 
-# | Magic number (4 bytes)                  \377t0c           |
-# +-----------------------------------------------------------+ 
-# | Version number (4 bytes)                \0\0\0\2          |
-# +-----------------------------------------------------------+ 
-# | Fanout table: 256 entries               fanout[0]         |
-# | of 4 bytes (1024 bytes)                 fanout[1]
-# |                                         ...
-# | fanout[i]-fanout[i-1] is the number of  fanout[255]
-# | objects whose name starts
-# | with hex(i), e.g. fanout[224]
-# | is the number of objects whose 
-# | name follow the pattern 00xxxxx
-# | up to e0xxxx.... ('0xe0' == 224)
-# |
-# | fanout[255] is thus the total number 
-# | of objects: nobjects == fanout[255]
-# +-----------------------------------------------------------+ 
-# | Name table: nobjects entries of sha1    name[0]
-# | names (nobjects * 20 bytes)             ....
-# |                                         name[nobjects-1]
-# +-----------------------------------------------------------+ 
-# | CRC32 table: nobjects entries of crc32  crc32[0]
-# | (nobjects * 4 bytes)                    ....
-# |                                         crc32[nobjects-1]
-# +-----------------------------------------------------------+ 
-# | 32 bits offset table: nobjects          offset[0]
-# | (nobject * 4 bytes)                     ....
-# |                                         offset[nobjects-1]
+# +-------------------------------------------------------------------------+
+# | Magic number (4 bytes)                  \377t0c                         |
+# +-------------------------------------------------------------------------+
+# | Version number (4 bytes)                \0\0\0\2                        |
+# +-------------------------------------------------------------------------+
+# | Fanout table: 256 entries               fanout[0]                       |
+# | of 4 bytes (1024 bytes)                 fanout[1]                       |
+# |                                         ...                             |
+# | fanout[i]-fanout[i-1] is the number of  fanout[255]                     |
+# | objects whose name starts                                               |
+# | with hex(i), e.g. fanout[224]                                           |
+# | is the number of objects whose                                          |
+# | name follow the pattern 00xxxxx                                         |
+# | up to e0xxxx.... ('0xe0' == 224)                                        |
+# |                                                                         |
+# | fanout[255] is thus the total number                                    |
+# | of objects: nobjects == fanout[255]                                     |
+# +-------------------------------------------------------------------------+
+# | Name table: nobjects entries of sha1    name[0]                         |
+# | names (nobjects * 20 bytes)             ....                            |
+# |                                         name[nobjects-1]                |
+# +-------------------------------------------------------------------------+
+# | CRC32 table: nobjects entries of crc32  crc32[0]                        |
+# | (nobjects * 4 bytes)                    ....                            |
+# |                                         crc32[nobjects-1]               |
+# +-------------------------------------------------------------------------+
+# | 32 bits offset table: nobjects          offset[0]                       |
+# | (nobject * 4 bytes)                     ....                            |
+# |                                         offset[nobjects-1]              |
+# +-------------------------------------------------------------------------+
+# | 64 bits offset table: nobjects64        offset64[0]                     |
+# | (nobject64 * 4 bytes)                     ....                          |
+# | if a given offset in the 32 bits table  offset64[nobjects64-1]          |
+# | has its most significant bit set, it                                    |
+# | means the corresponding offset is 64                                    |
+# | bits                                                                    |
+# +-------------------------------------------------------------------------+
+# | Pack checksum (20 bytes)                pack_checksum                   |
+# +-------------------------------------------------------------------------+
+# | Index checksum (20 bytes)               index_checksum                  |
+# | Checksum of the above (whole index                                      |
+# | file minus this entry of course)                                        |
+# +-------------------------------------------------------------------------+
 class PackIndexV2:
     def __init__(self, fobject):
         """fobject is a file object advanced after the header (8 bytes)."""
